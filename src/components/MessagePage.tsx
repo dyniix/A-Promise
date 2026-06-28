@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import ScrollDown from './ScrollDown'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 const GENERIC_MESSAGE = `Happy Birthday, Shreya.
 
@@ -11,6 +12,7 @@ You deserve a day as beautiful as you are.`
 const HIDDEN_HINT = '\u2014 The depth was always the signal.'
 
 export default function MessagePage() {
+  const isMobile = useIsMobile()
   return (
     <section className="page relative bg-bg">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,rgba(3,143,164,0.04)_0%,transparent_60%)] pointer-events-none" />
@@ -28,8 +30,8 @@ export default function MessagePage() {
         </motion.span>
 
         <motion.h2
-          initial={{ opacity: 0, y: 20, filter: 'blur(4px)' }}
-          whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          initial={isMobile ? { opacity: 0, y: 14 } : { opacity: 0, y: 20, filter: 'blur(4px)' }}
+          whileInView={isMobile ? { opacity: 1, y: 0 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
           viewport={{ margin: '-60px' }}
           transition={{ duration: 1.3, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           className="font-display text-[clamp(1.8rem,5vw,3rem)] text-white/90 italic tracking-wider mb-10"
@@ -39,8 +41,8 @@ export default function MessagePage() {
 
         {/* message card */}
         <motion.div
-          initial={{ opacity: 0, y: 30, filter: 'blur(6px)' }}
-          whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          initial={isMobile ? { opacity: 0, y: 16, scale: 0.97 } : { opacity: 0, y: 30, filter: 'blur(6px)' }}
+          whileInView={isMobile ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
           viewport={{ margin: '-60px' }}
           transition={{ duration: 1.3, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           className="glass rounded-2xl p-8 md:p-10 w-full"

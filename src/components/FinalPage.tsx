@@ -1,5 +1,6 @@
 import { motion, useInView } from 'motion/react'
-import { useEffect, useState, useMemo, useRef } from 'react'
+import { useEffect, useState, useMemo, useRef, memo } from 'react'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 const AMBIENT = [
   { x: 30, y: 40, size: 250, color: '#f472b6', delay: 0 },
@@ -11,7 +12,7 @@ const AMBIENT = [
 const HAPPY_LETTERS = 'Happy'.split('')
 const BIRTHDAY_LETTERS = 'Birthday'.split('')
 
-function AuroraLayer({ className, gradient, delay }: { className: string; gradient: string; delay: number }) {
+const AuroraLayer = memo(function AuroraLayer({ className, gradient, delay }: { className: string; gradient: string; delay: number }) {
   return (
     <motion.div
       className={`absolute rounded-full pointer-events-none ${className}`}
@@ -29,9 +30,9 @@ function AuroraLayer({ className, gradient, delay }: { className: string; gradie
       }}
     />
   )
-}
+})
 
-function Orb({ orb, i }: { orb: typeof AMBIENT[0]; i: number }) {
+const Orb = memo(function Orb({ orb, i }: { orb: typeof AMBIENT[0]; i: number }) {
   return (
     <motion.div
       className="absolute rounded-full blur-3xl pointer-events-none"
@@ -57,9 +58,9 @@ function Orb({ orb, i }: { orb: typeof AMBIENT[0]; i: number }) {
       }}
     />
   )
-}
+})
 
-function DustParticle({ p }: { p: { left: string; top: string; size: number; delay: number; duration: number; driftY: number } }) {
+const DustParticle = memo(function DustParticle({ p }: { p: { left: string; top: string; size: number; delay: number; duration: number; driftY: number } }) {
   return (
     <motion.div
       className="absolute rounded-full bg-white/15 pointer-events-none"
@@ -82,9 +83,10 @@ function DustParticle({ p }: { p: { left: string; top: string; size: number; del
       }}
     />
   )
-}
+})
 
 export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
+  const isMobile = useIsMobile()
   const [stage, setStage] = useState(0)
   const sectionRef = useRef<HTMLDivElement>(null)
   const isVisible = useInView(sectionRef, { margin: '-100px 0px' })
@@ -92,7 +94,7 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
   const ambient = useMemo(() => AMBIENT, [])
   const dust = useMemo(
     () =>
-      Array.from({ length: 10 }, (_, i) => ({
+      Array.from({ length: isMobile ? 6 : 10 }, (_, i) => ({
         left: `${8 + (i * 9) % 84}%`,
         top: `${12 + (i * 11) % 76}%`,
         size: 1 + (i % 2),
@@ -177,8 +179,8 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
             {HAPPY_LETTERS.map((letter, i) => (
               <motion.span
                 key={i}
-                initial={{ opacity: 0, y: 30, filter: 'blur(6px)' }}
-                whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                initial={isMobile ? { opacity: 0, y: 20, scale: 0.92 } : { opacity: 0, y: 30, filter: 'blur(6px)' }}
+                whileInView={isMobile ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
                 viewport={{ margin: '-40px' }}
                 transition={{
                   delay: i * 0.15,
@@ -208,8 +210,8 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
             {BIRTHDAY_LETTERS.map((letter, i) => (
               <motion.span
                 key={i}
-                initial={{ opacity: 0, y: 30, filter: 'blur(6px)' }}
-                whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                initial={isMobile ? { opacity: 0, y: 20, scale: 0.92 } : { opacity: 0, y: 30, filter: 'blur(6px)' }}
+                whileInView={isMobile ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
                 viewport={{ margin: '-40px' }}
                 transition={{
                   delay: 0.6 + i * 0.15,
@@ -234,8 +236,8 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
         {/* blessing + divider */}
         {stage >= 2 && (
           <motion.div
-            initial={{ opacity: 0, y: 20, filter: 'blur(4px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            initial={isMobile ? { opacity: 0, y: 12 } : { opacity: 0, y: 20, filter: 'blur(4px)' }}
+            animate={isMobile ? { opacity: 1, y: 0 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center gap-6"
           >
@@ -273,8 +275,8 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
         {stage >= 5 && (
           <motion.div
             className="absolute bottom-16 md:bottom-20 flex flex-col items-center"
-            initial={{ opacity: 0, y: 14, filter: 'blur(8px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            initial={isMobile ? { opacity: 0, y: 8, scale: 0.95 } : { opacity: 0, y: 14, filter: 'blur(8px)' }}
+            animate={isMobile ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
           >
             {/* bloom glow layers — opacity instead of boxShadow */}

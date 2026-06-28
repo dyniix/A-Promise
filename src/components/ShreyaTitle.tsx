@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 interface ShreyaTitleProps {
   size?: 'hero' | 'intro'
@@ -8,20 +9,21 @@ interface ShreyaTitleProps {
   staggerDelay?: number
   gradient?: string
   glow?: 'premium' | 'subtle'
+  active?: boolean
 }
 
 const LETTERS = 'Shreya'.split('')
 const DEFAULT_GRADIENT =
   'linear-gradient(90deg, #F472B6 0%, #F7B8D8 25%, #F8F3FB 50%, #DCEFFF 75%, #7DD3FC 100%)'
 
-function BloomGlow({ className, intensity }: { className: string; intensity: string }) {
+function BloomGlow({ className, intensity, active }: { className: string; intensity: string; active: boolean }) {
   return (
     <div className={`absolute ${className}`}>
       <motion.div
         className={`w-full h-full rounded-full blur-[80px] pointer-events-none ${intensity}`}
         style={{ willChange: 'opacity' }}
-        animate={{ opacity: [0.25, 0.5, 0.25] }}
-        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+        animate={active ? { opacity: [0.25, 0.5, 0.25] } : { opacity: 0.25 }}
+        transition={{ duration: 6, repeat: active ? Infinity : 0, ease: 'easeInOut' }}
       />
     </div>
   )
@@ -34,8 +36,10 @@ export default function ShreyaTitle({
   staggerDelay = 0.1,
   gradient = DEFAULT_GRADIENT,
   glow = 'premium',
+  active = true,
 }: ShreyaTitleProps) {
   const isHero = size === 'hero'
+  const isMobile = useIsMobile()
   const [driftPhase, setDriftPhase] = useState(0)
 
   useEffect(() => {
@@ -69,26 +73,29 @@ export default function ShreyaTitle({
         <BloomGlow
           className="left-[-10%] w-[40%] h-[180%]"
           intensity={glow === 'subtle' ? 'bg-pink/[0.04]' : 'bg-pink/10'}
+          active={active}
         />
         <BloomGlow
           className="left-[30%] w-[40%] h-[160%]"
           intensity={glow === 'subtle' ? 'bg-white/[0.015]' : 'bg-white/[0.03]'}
+          active={active}
         />
         <BloomGlow
           className="right-[-10%] w-[40%] h-[180%]"
           intensity={glow === 'subtle' ? 'bg-sky/[0.04]' : 'bg-sky/10'}
+          active={active}
         />
       </div>
 
       {/* vertical float */}
       <motion.div
-        animate={{ y: [0, -0.5, 0] }}
-        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+        animate={active ? { y: [0, -0.5, 0] } : { y: 0 }}
+        transition={{ duration: 10, repeat: active ? Infinity : 0, ease: 'easeInOut' }}
         style={{ willChange: 'transform' }}
       >
         {/* gradient drift */}
         <motion.div
-          animate={{ x: driftX }}
+          animate={{ x: active ? driftX : 0 }}
           transition={{ duration: driftPhase === 1 ? 2.5 : 3, ease: 'easeInOut' }}
           style={{ willChange: 'transform' }}
         >
@@ -97,8 +104,18 @@ export default function ShreyaTitle({
             {LETTERS.map((letter, i) => (
               <motion.span
                 key={i}
-                initial={animate ? { opacity: 0, y: 30, filter: 'blur(6px)' } : { opacity: 1 }}
-                animate={animate ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
+                initial={animate
+                  ? isMobile
+                    ? { opacity: 0, y: 30, scale: 0.9 }
+                    : { opacity: 0, y: 30, filter: 'blur(6px)' }
+                  : { opacity: 1 }
+                }
+                animate={animate
+                  ? isMobile
+                    ? { opacity: 1, y: 0, scale: 1 }
+                    : { opacity: 1, y: 0, filter: 'blur(0px)' }
+                  : {}
+                }
                 transition={animate
                   ? { delay: delayStart + i * staggerDelay, duration: 1, ease: [0.16, 1, 0.3, 1] }
                   : {}

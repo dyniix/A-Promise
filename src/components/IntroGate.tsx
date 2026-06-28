@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react'
 import { useState, useEffect, useMemo } from 'react'
 import ShreyaTitle from './ShreyaTitle'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 const PHRASES = [
   'Preparing something special...',
@@ -113,11 +114,12 @@ function DustParticle({ p }: { p: Particle }) {
 }
 
 export default function IntroGate({ onEnter }: { onEnter: () => void }) {
+  const isMobile = useIsMobile()
   const [phase, setPhase] = useState<'loading' | 'ready'>('loading')
   const [barDone, setBarDone] = useState(false)
 
   const particles = useMemo<Particle[]>(() =>
-    Array.from({ length: 6 }, (_, i) => ({
+    Array.from({ length: isMobile ? 3 : 6 }, (_, i) => ({
       left: `${15 + (i * 13) % 70}%`,
       top: `${20 + (i * 17) % 60}%`,
       size: 1 + (i % 2),
@@ -234,7 +236,7 @@ export default function IntroGate({ onEnter }: { onEnter: () => void }) {
           key="button"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.96, filter: 'blur(12px)' }}
+      exit={isMobile ? { opacity: 0, scale: 0.96 } : { opacity: 0, scale: 0.96, filter: 'blur(12px)' }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           className="relative z-10 flex flex-col items-center gap-10"
         >

@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react'
 import { useState, useCallback, memo } from 'react'
 import ScrollDown from './ScrollDown'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 interface Memory {
   id: number
@@ -50,12 +51,12 @@ const NavButton = memo(function NavButton({ direction, onClick }: { direction: '
   )
 })
 
-function MemoryCard({ memory }: { memory: Memory }) {
+function MemoryCard({ memory, isMobile: mobile }: { memory: Memory; isMobile: boolean }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15, filter: 'blur(5px)' }}
-      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-      exit={{ opacity: 0, y: -15, filter: 'blur(5px)' }}
+      initial={mobile ? { opacity: 0, y: 10, scale: 0.96 } : { opacity: 0, y: 15, filter: 'blur(5px)' }}
+      animate={mobile ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
+      exit={mobile ? { opacity: 0, y: -10, scale: 0.96 } : { opacity: 0, y: -15, filter: 'blur(5px)' }}
       transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
       className="glass rounded-2xl p-8 md:p-10 w-full text-center"
     >
@@ -67,6 +68,7 @@ function MemoryCard({ memory }: { memory: Memory }) {
 }
 
 export default function MemoriesPage() {
+  const isMobile = useIsMobile()
   const [active, setActive] = useState(0)
 
   const prev = useCallback(() => setActive((a) => (a === 0 ? MEMORIES.length - 1 : a - 1)), [])
@@ -88,8 +90,8 @@ export default function MemoriesPage() {
         </motion.span>
 
         <motion.h2
-          initial={{ opacity: 0, y: 20, filter: 'blur(4px)' }}
-          whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          initial={isMobile ? { opacity: 0, y: 14 } : { opacity: 0, y: 20, filter: 'blur(4px)' }}
+          whileInView={isMobile ? { opacity: 1, y: 0 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
           viewport={{ margin: '-60px' }}
           transition={{ duration: 1.3, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           className="font-display text-[clamp(1.8rem,5vw,3rem)] text-white/90 italic tracking-wider mb-10"
@@ -100,7 +102,7 @@ export default function MemoriesPage() {
         {/* memory card */}
         <div className="w-full relative min-h-[280px] md:min-h-[320px] flex items-center justify-center">
           <AnimatePresence mode="wait">
-            <MemoryCard key={MEMORIES[active].id} memory={MEMORIES[active]} />
+            <MemoryCard key={MEMORIES[active].id} memory={MEMORIES[active]} isMobile={isMobile} />
           </AnimatePresence>
         </div>
 
