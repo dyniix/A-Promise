@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react'
-import { useState } from 'react'
+import { useState, useCallback, memo } from 'react'
 import ScrollDown from './ScrollDown'
 
 interface Memory {
@@ -9,33 +9,68 @@ interface Memory {
   icon: string
 }
 
-// PLACEHOLDER — user will fill these
 const MEMORIES: Memory[] = [
   {
     id: 1,
     title: 'Memory One',
     text: 'This is where a memory will go. Something that matters.',
-    icon: '✦',
+    icon: '\u2726',
   },
   {
     id: 2,
     title: 'Memory Two',
     text: 'This is where another memory will go. Replace this text.',
-    icon: '✧',
+    icon: '\u2727',
   },
   {
     id: 3,
     title: 'Memory Three',
     text: 'One more memory slot. Fill when ready.',
-    icon: '☆',
+    icon: '\u2606',
   },
 ]
+
+const NavButton = memo(function NavButton({ direction, onClick }: { direction: 'prev' | 'next'; onClick: () => void }) {
+  return (
+    <motion.button
+      onClick={onClick}
+      whileHover={{ scale: 1.06 }}
+      whileTap={{ scale: 0.94 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className={`w-9 h-9 flex items-center justify-center rounded-full border border-white/[0.08] transition-all duration-300 ease-premium ${
+        direction === 'prev'
+          ? 'text-white/30 hover:text-pink/70 hover:border-pink/30'
+          : 'text-white/30 hover:text-sky/70 hover:border-sky/30'
+      }`}
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d={direction === 'prev' ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6'} />
+      </svg>
+    </motion.button>
+  )
+})
+
+function MemoryCard({ memory }: { memory: Memory }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 15, filter: 'blur(5px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      exit={{ opacity: 0, y: -15, filter: 'blur(5px)' }}
+      transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+      className="glass rounded-2xl p-8 md:p-10 w-full text-center"
+    >
+      <span className="text-3xl md:text-4xl text-pink/60 block mb-4">{memory.icon}</span>
+      <h3 className="font-display text-lg md:text-xl text-white/80 italic mb-3">{memory.title}</h3>
+      <p className="font-sans text-sm text-white/40 leading-relaxed">{memory.text}</p>
+    </motion.div>
+  )
+}
 
 export default function MemoriesPage() {
   const [active, setActive] = useState(0)
 
-  const prev = () => setActive((a) => (a === 0 ? MEMORIES.length - 1 : a - 1))
-  const next = () => setActive((a) => (a === MEMORIES.length - 1 ? 0 : a + 1))
+  const prev = useCallback(() => setActive((a) => (a === 0 ? MEMORIES.length - 1 : a - 1)), [])
+  const next = useCallback(() => setActive((a) => (a === MEMORIES.length - 1 ? 0 : a + 1)), [])
 
   return (
     <section className="page relative bg-bg">
@@ -65,34 +100,13 @@ export default function MemoriesPage() {
         {/* memory card */}
         <div className="w-full relative min-h-[280px] md:min-h-[320px] flex items-center justify-center">
           <AnimatePresence mode="wait">
-            <motion.div
-              key={MEMORIES[active].id}
-              initial={{ opacity: 0, y: 15, filter: 'blur(5px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, y: -15, filter: 'blur(5px)' }}
-              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              className="glass rounded-2xl p-8 md:p-10 w-full text-center"
-            >
-              <span className="text-3xl md:text-4xl text-pink/60 block mb-4">{MEMORIES[active].icon}</span>
-              <h3 className="font-display text-lg md:text-xl text-white/80 italic mb-3">{MEMORIES[active].title}</h3>
-              <p className="font-sans text-sm text-white/40 leading-relaxed">{MEMORIES[active].text}</p>
-            </motion.div>
+            <MemoryCard key={MEMORIES[active].id} memory={MEMORIES[active]} />
           </AnimatePresence>
         </div>
 
         {/* navigation */}
         <div className="flex items-center gap-3 mt-8">
-          <motion.button
-            onClick={prev}
-            whileHover={{ scale: 1.06 }}
-            whileTap={{ scale: 0.94 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="w-9 h-9 flex items-center justify-center rounded-full border border-white/[0.08] text-white/30 hover:text-pink/70 hover:border-pink/30 transition-all duration-300 ease-premium"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-          </motion.button>
+          <NavButton direction="prev" onClick={prev} />
           <div className="flex items-center gap-2">
             {MEMORIES.map((_, i) => (
               <button
@@ -104,17 +118,7 @@ export default function MemoriesPage() {
               />
             ))}
           </div>
-          <motion.button
-            onClick={next}
-            whileHover={{ scale: 1.06 }}
-            whileTap={{ scale: 0.94 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="w-9 h-9 flex items-center justify-center rounded-full border border-white/[0.08] text-white/30 hover:text-sky/70 hover:border-sky/30 transition-all duration-300 ease-premium"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 18l6-6-6-6" />
-            </svg>
-          </motion.button>
+          <NavButton direction="next" onClick={next} />
         </div>
       </div>
       <ScrollDown current={1} />

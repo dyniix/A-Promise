@@ -12,7 +12,7 @@ export default function HeroPage() {
 
   return (
     <section className="page relative bg-bg">
-      {/* background glow */}
+      {/* background glow — static, no animation */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,rgba(3,143,164,0.06)_0%,transparent_60%)] pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,rgba(244,114,182,0.04)_0%,transparent_50%)] pointer-events-none" />
 

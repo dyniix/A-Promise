@@ -8,7 +8,7 @@ This is a small wish from someone who remembers you. May your year ahead be fill
 You deserve a day as beautiful as you are.`
 
 // Hidden hint — if she remembers, she'll know
-const HIDDEN_HINT = '— The depth was always the signal.'
+const HIDDEN_HINT = '\u2014 The depth was always the signal.'
 
 export default function MessagePage() {
   return (
