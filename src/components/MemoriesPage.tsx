@@ -37,11 +37,11 @@ const NavButton = memo(function NavButton({ direction, onClick }: { direction: '
       onClick={onClick}
       whileHover={{ scale: 1.06 }}
       whileTap={{ scale: 0.94 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className={`w-9 h-9 flex items-center justify-center rounded-full border border-white/[0.08] transition-all duration-300 ease-premium ${
+      transition={{ type: 'spring', stiffness: 400, damping: 18 }}
+      className={`w-9 h-9 flex items-center justify-center rounded-full border border-white/[0.08] ${
         direction === 'prev'
-          ? 'text-white/30 hover:text-pink/70 hover:border-pink/30'
-          : 'text-white/30 hover:text-sky/70 hover:border-sky/30'
+          ? 'text-white/30 hover:text-pink/70 hover:border-pink/30 transition-colors duration-500 ease-premium'
+          : 'text-white/30 hover:text-sky/70 hover:border-sky/30 transition-colors duration-500 ease-premium'
       }`}
     >
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -57,7 +57,7 @@ function MemoryCard({ memory, isMobile: mobile }: { memory: Memory; isMobile: bo
       initial={mobile ? { opacity: 0, y: 10, scale: 0.96 } : { opacity: 0, y: 15, filter: 'blur(5px)' }}
       animate={mobile ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
       exit={mobile ? { opacity: 0, y: -10, scale: 0.96 } : { opacity: 0, y: -15, filter: 'blur(5px)' }}
-      transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 1.3, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
       className="glass rounded-2xl p-8 md:p-10 w-full text-center"
     >
       <span className="text-3xl md:text-4xl text-pink/60 block mb-4">{memory.icon}</span>
@@ -70,9 +70,20 @@ function MemoryCard({ memory, isMobile: mobile }: { memory: Memory; isMobile: bo
 export default function MemoriesPage() {
   const isMobile = useIsMobile()
   const [active, setActive] = useState(0)
+  const [locked, setLocked] = useState(false)
 
-  const prev = useCallback(() => setActive((a) => (a === 0 ? MEMORIES.length - 1 : a - 1)), [])
-  const next = useCallback(() => setActive((a) => (a === MEMORIES.length - 1 ? 0 : a + 1)), [])
+  const prev = useCallback(() => {
+    if (locked) return
+    setLocked(true)
+    setActive((a) => (a === 0 ? MEMORIES.length - 1 : a - 1))
+    setTimeout(() => setLocked(false), 800)
+  }, [locked])
+  const next = useCallback(() => {
+    if (locked) return
+    setLocked(true)
+    setActive((a) => (a === MEMORIES.length - 1 ? 0 : a + 1))
+    setTimeout(() => setLocked(false), 800)
+  }, [locked])
 
   return (
     <section className="page relative bg-bg">
@@ -83,7 +94,7 @@ export default function MemoriesPage() {
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ margin: '-60px' }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
           className="font-mono text-[7px] md:text-[8px] uppercase tracking-[0.35em] text-sky/40 mb-2"
         >
           Some Moments
@@ -99,7 +110,7 @@ export default function MemoriesPage() {
           Little <span className="text-pink/70">Memories</span>
         </motion.h2>
 
-        {/* memory card */}
+        {/* memory card — delayed slightly after heading */}
         <div className="w-full relative min-h-[280px] md:min-h-[320px] flex items-center justify-center">
           <AnimatePresence mode="wait">
             <MemoryCard key={MEMORIES[active].id} memory={MEMORIES[active]} isMobile={isMobile} />
@@ -111,10 +122,13 @@ export default function MemoriesPage() {
           <NavButton direction="prev" onClick={prev} />
           <div className="flex items-center gap-2">
             {MEMORIES.map((_, i) => (
-              <button
+              <motion.button
                 key={i}
-                onClick={() => setActive(i)}
-                className={`rounded-full transition-all duration-500 ease-premium ${
+                onClick={() => { if (!locked) { setLocked(true); setActive(i); setTimeout(() => setLocked(false), 800) } }}
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.85 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                className={`rounded-full cursor-pointer ${
                   i === active ? 'w-5 h-1.5 bg-gradient-to-r from-pink/70 to-sky/70' : 'w-1.5 h-1.5 bg-white/15'
                 }`}
               />

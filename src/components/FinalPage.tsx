@@ -19,7 +19,7 @@ const AuroraLayer = memo(function AuroraLayer({ className, gradient, delay }: { 
       style={{
         background: gradient,
         filter: 'blur(70px)',
-        willChange: 'transform',
+        willChange: 'transform, opacity',
       }}
       animate={{ opacity: [0.35, 0.55, 0.35], scale: [1, 1.03, 1] }}
       transition={{
@@ -32,7 +32,7 @@ const AuroraLayer = memo(function AuroraLayer({ className, gradient, delay }: { 
   )
 })
 
-const Orb = memo(function Orb({ orb, i }: { orb: typeof AMBIENT[0]; i: number }) {
+const Orb = memo(function Orb({ orb, i, simplified }: { orb: typeof AMBIENT[0]; i: number; simplified?: boolean }) {
   return (
     <motion.div
       className="absolute rounded-full blur-3xl pointer-events-none"
@@ -45,13 +45,13 @@ const Orb = memo(function Orb({ orb, i }: { orb: typeof AMBIENT[0]; i: number })
         willChange: 'transform, opacity',
       }}
       animate={{
-        y: [0, -10, 0, 8, 0],
-        x: [0, 6, -5, 4, 0],
-        scale: [1, 1.04, 0.97, 1.03, 1],
+        y: simplified ? [0, -6, 0] : [0, -10, 0, 8, 0],
+        x: simplified ? [0, 4, 0] : [0, 6, -5, 4, 0],
+        scale: [1, 1.03, 1],
         opacity: [0.06, 0.12, 0.06],
       }}
       transition={{
-        duration: 22 + i * 4,
+        duration: simplified ? 18 : 22 + i * 4,
         repeat: Infinity,
         delay: orb.delay,
         ease: 'easeInOut',
@@ -90,11 +90,25 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
   const [stage, setStage] = useState(0)
   const sectionRef = useRef<HTMLDivElement>(null)
   const isVisible = useInView(sectionRef, { margin: '-100px 0px' })
+  const [triggered, setTriggered] = useState(false)
 
-  const ambient = useMemo(() => AMBIENT, [])
+  // stagger decorative groups when page enters view (avoids mount storm)
+  const [decorPhase, setDecorPhase] = useState(0)
+  useEffect(() => {
+    if (isVisible) {
+      setDecorPhase(1)
+      const t1 = setTimeout(() => setDecorPhase(2), 200)
+      const t2 = setTimeout(() => setDecorPhase(3), 400)
+      return () => { clearTimeout(t1); clearTimeout(t2) }
+    } else {
+      setDecorPhase(0)
+    }
+  }, [isVisible])
+
+  const ambient = useMemo(() => isMobile ? AMBIENT.slice(0, 3) : AMBIENT, [isMobile])
   const dust = useMemo(
     () =>
-      Array.from({ length: isMobile ? 6 : 10 }, (_, i) => ({
+      Array.from({ length: isMobile ? 4 : 10 }, (_, i) => ({
         left: `${8 + (i * 9) % 84}%`,
         top: `${12 + (i * 11) % 76}%`,
         size: 1 + (i % 2),
@@ -119,7 +133,7 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
   return (
     <section ref={sectionRef} className="page relative bg-bg overflow-hidden">
       {/* aurora layers — opacity+scale instead of x/y+blur */}
-      {isVisible && (
+      {decorPhase >= 1 && (
         <>
           <AuroraLayer
             className="w-[75%] h-[75%] left-[12%] top-[12%]"
@@ -131,21 +145,23 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
             gradient="radial-gradient(ellipse, rgba(3,143,164,0.04), transparent 60%)"
             delay={5}
           />
-          <AuroraLayer
-            className="w-[55%] h-[55%] left-[22%] bottom-[22%]"
-            gradient="radial-gradient(ellipse, rgba(244,114,182,0.03), transparent 60%)"
-            delay={10}
-          />
+          {!isMobile && (
+            <AuroraLayer
+              className="w-[55%] h-[55%] left-[22%] bottom-[22%]"
+              gradient="radial-gradient(ellipse, rgba(244,114,182,0.03), transparent 60%)"
+              delay={10}
+            />
+          )}
         </>
       )}
 
       {/* ambient orbs */}
-      {isVisible && ambient.map((orb, i) => (
-        <Orb key={i} orb={orb} i={i} />
+      {decorPhase >= 2 && ambient.map((orb, i) => (
+        <Orb key={i} orb={orb} i={i} simplified={isMobile} />
       ))}
 
       {/* dust particles */}
-      {isVisible && (
+      {decorPhase >= 3 && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {dust.map((p, i) => (
             <DustParticle key={i} p={p} />
@@ -179,12 +195,12 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
             {HAPPY_LETTERS.map((letter, i) => (
               <motion.span
                 key={i}
-                initial={isMobile ? { opacity: 0, y: 20, scale: 0.92 } : { opacity: 0, y: 30, filter: 'blur(6px)' }}
+                initial={isMobile ? { opacity: 0, y: 14, scale: 0.94 } : { opacity: 0, y: 20, filter: 'blur(4px)' }}
                 whileInView={isMobile ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
                 viewport={{ margin: '-40px' }}
                 transition={{
                   delay: i * 0.15,
-                  duration: 1.1,
+                  duration: 1.3,
                   ease: [0.16, 1, 0.3, 1],
                 }}
                 className="font-display text-[clamp(1.6rem,6.5vw,3rem)] uppercase italic tracking-tight leading-none overflow-visible py-[0.15em] px-[0.05em] inline-block"
@@ -210,12 +226,12 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
             {BIRTHDAY_LETTERS.map((letter, i) => (
               <motion.span
                 key={i}
-                initial={isMobile ? { opacity: 0, y: 20, scale: 0.92 } : { opacity: 0, y: 30, filter: 'blur(6px)' }}
+                initial={isMobile ? { opacity: 0, y: 14, scale: 0.94 } : { opacity: 0, y: 20, filter: 'blur(4px)' }}
                 whileInView={isMobile ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
                 viewport={{ margin: '-40px' }}
                 transition={{
                   delay: 0.6 + i * 0.15,
-                  duration: 1.1,
+                  duration: 1.3,
                   ease: [0.16, 1, 0.3, 1],
                 }}
                 className="font-display text-[clamp(1.6rem,6.5vw,3rem)] uppercase italic tracking-tight leading-none overflow-visible py-[0.15em] px-[0.05em] inline-block"
@@ -238,7 +254,7 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
           <motion.div
             initial={isMobile ? { opacity: 0, y: 12 } : { opacity: 0, y: 20, filter: 'blur(4px)' }}
             animate={isMobile ? { opacity: 1, y: 0 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center gap-6"
           >
             <motion.div
@@ -262,7 +278,7 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
             className="absolute bottom-8"
           >
             <span className="font-mono text-[5px] md:text-[6px] uppercase tracking-[0.5em] text-white/[0.07]">
@@ -280,7 +296,7 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
             transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
           >
             {/* bloom glow layers — opacity instead of boxShadow */}
-            {isVisible && (
+            {decorPhase >= 3 && (
               <>
                 <motion.div
                   className="absolute w-[55%] h-[200%] left-[-10%] bg-pink/[0.06] blur-[65px] rounded-full pointer-events-none"
@@ -296,13 +312,13 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
             )}
 
             <motion.div
-              animate={isVisible ? { y: [0, -0.5, 0] } : {}}
+              animate={decorPhase >= 3 ? { y: [0, -0.5, 0] } : {}}
               transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-              whileHover={{ scale: 1.03, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }}
-              whileTap={{ scale: 0.97, transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] } }}
+              whileHover={{ scale: 1.03, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
+              whileTap={{ scale: 0.96, transition: { type: 'spring', stiffness: 500, damping: 15 } }}
             >
               <button
-                onClick={onContinue}
+                onClick={() => { if (!triggered) { setTriggered(true); onContinue?.() } }}
                 className="relative rounded-full px-14 py-[18px] md:px-16 md:py-[22px] cursor-pointer overflow-hidden group"
                 style={{
                   background: 'rgba(255,255,255,0.06)',
@@ -311,7 +327,7 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
                 }}
               >
                 {/* breathing glow — opacity, not boxShadow */}
-                {isVisible && (
+                {decorPhase >= 3 && (
                   <motion.div
                     className="absolute inset-0 rounded-full pointer-events-none"
                     style={{
@@ -332,7 +348,7 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
                   }}
                 />
 
-                {isVisible && (
+                {decorPhase >= 3 && (
                   <div className="absolute inset-0 rounded-full bg-gradient-to-br from-pink/[0.05] via-white/[0.02] to-sky/[0.05] group-hover:from-pink/[0.15] group-hover:to-sky/[0.15] transition-all duration-500 ease-premium" />
                 )}
 

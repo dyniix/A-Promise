@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react'
 import { useEffect, useState, useRef } from 'react'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 const WORDS = ['Only', 'for', 'you', '...']
 
@@ -9,6 +10,7 @@ const GLASS_NOISE =
   )}`
 
 export default function TransitionOverlay({ onReveal }: { onReveal: () => void }) {
+  const isMobile = useIsMobile()
   const [phase, setPhase] = useState(0)
   const [wordCount, setWordCount] = useState(0)
   const [bloomWord, setBloomWord] = useState(0)
@@ -141,7 +143,7 @@ export default function TransitionOverlay({ onReveal }: { onReveal: () => void }
                     />
                   </svg>
 
-                  {/* main ring — fixed position, only arc moves via strokeDashoffset */}
+                  {/* main ring — strokeDashoffset animation */}
                   <svg className="w-10 h-10 md:w-12 md:h-12" viewBox="0 0 100 100">
                     <defs>
                       <linearGradient id="loaderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -186,7 +188,10 @@ export default function TransitionOverlay({ onReveal }: { onReveal: () => void }
               <motion.p
                 key="text"
                 initial={false}
-                exit={{ opacity: 0, y: -8, filter: 'blur(4px)', transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }}
+                exit={isMobile
+                  ? { opacity: 0, y: -8, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+                  : { opacity: 0, y: -8, filter: 'blur(4px)', transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+                }
                 className="font-display italic text-[19px] md:text-[21px] text-white/50 tracking-[0.05em] flex items-center gap-[0.3em]"
               >
                 {WORDS.map((word, i) => (
@@ -197,9 +202,13 @@ export default function TransitionOverlay({ onReveal }: { onReveal: () => void }
                       animate={{
                         opacity: wordCount > i ? 1 : 0,
                         y: wordCount > i ? 0 : 8,
-                        filter: wordCount > i ? 'blur(0px)' : 'blur(5px)',
+                        ...(isMobile
+                          ? { scale: wordCount > i ? 1 : 0.92 }
+                          : { filter: wordCount > i ? 'blur(0px)' : 'blur(5px)' }
+                        ),
                       }}
-                      transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                      transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+                      style={{ willChange: 'transform, opacity' }}
                     >
                       {word}
                     </motion.span>
@@ -230,6 +239,7 @@ export default function TransitionOverlay({ onReveal }: { onReveal: () => void }
                         width: '2.5px',
                         height: '2.5px',
                         background: '#f472b6',
+                        willChange: 'transform, opacity',
                       }}
                       animate={{
                         opacity: visible

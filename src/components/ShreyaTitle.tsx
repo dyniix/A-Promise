@@ -106,8 +106,8 @@ export default function ShreyaTitle({
                 key={i}
                 initial={animate
                   ? isMobile
-                    ? { opacity: 0, y: 30, scale: 0.9 }
-                    : { opacity: 0, y: 30, filter: 'blur(6px)' }
+                    ? { opacity: 0, y: 20, scale: 0.92 }
+                    : { opacity: 0, y: 20, filter: 'blur(4px)' }
                   : { opacity: 1 }
                 }
                 animate={animate
@@ -117,7 +117,7 @@ export default function ShreyaTitle({
                   : {}
                 }
                 transition={animate
-                  ? { delay: delayStart + i * staggerDelay, duration: 1, ease: [0.16, 1, 0.3, 1] }
+                  ? { delay: delayStart + i * staggerDelay, duration: 1.3, ease: [0.16, 1, 0.3, 1] }
                   : {}
                 }
                 className={`font-display uppercase italic tracking-tight leading-none overflow-visible inline-block ${

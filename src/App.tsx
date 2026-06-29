@@ -3,11 +3,18 @@ import { AnimatePresence, useScroll, useTransform, motion } from 'motion/react'
 import IntroGate from './components/IntroGate'
 import TransitionOverlay from './components/TransitionOverlay'
 
-const HeroPage = lazy(() => import('./components/HeroPage'))
-const MemoriesPage = lazy(() => import('./components/MemoriesPage'))
-const MessagePage = lazy(() => import('./components/MessagePage'))
-const FinalPage = lazy(() => import('./components/FinalPage'))
-const NextPage = lazy(() => import('./components/NextPage'))
+// separate import functions for manual preloading
+const preloadHero = () => import('./components/HeroPage')
+const preloadMemories = () => import('./components/MemoriesPage')
+const preloadMessage = () => import('./components/MessagePage')
+const preloadFinal = () => import('./components/FinalPage')
+const preloadNext = () => import('./components/NextPage')
+
+const HeroPage = lazy(preloadHero)
+const MemoriesPage = lazy(preloadMemories)
+const MessagePage = lazy(preloadMessage)
+const FinalPage = lazy(preloadFinal)
+const NextPage = lazy(preloadNext)
 
 const LABELS = ['Hey', 'Moments', 'Message', 'Celebrate']
 const PAGE_LOADER = <div className="page bg-bg" />
@@ -62,6 +69,15 @@ export default function App() {
     return () => observer.disconnect()
   }, [nextState, scrollStarted])
 
+  // page streaming — preload next page chunk when current page becomes active
+  useEffect(() => {
+    if (nextState !== 'hidden') return
+    const preloaders = [preloadHero, preloadMemories, preloadMessage, preloadFinal]
+    if (active < preloaders.length - 1) {
+      preloaders[active + 1]()
+    }
+  }, [active, nextState])
+
   const { scrollYProgress } = useScroll({ container: containerRef })
   const opacity = useTransform(scrollYProgress, [0.95, 1], [1, 0])
   const scale = useTransform(scrollYProgress, [0.95, 1], [1, 0.92])
@@ -84,18 +100,18 @@ export default function App() {
         {nextState === 'hidden' && (
           <div
             ref={containerRef}
-            className="h-dvh snap-y snap-mandatory hide-scrollbar overflow-y-auto"
+            className="h-dvh snap-y snap-proximity hide-scrollbar overflow-y-auto"
           >
-            <div data-index={0} className="snap-start" style={{ scrollSnapStop: 'always' }}>
+            <div data-index={0} className="snap-start">
               <Suspense fallback={PAGE_LOADER}><HeroPage /></Suspense>
             </div>
-            <div data-index={1} className="snap-start" style={{ scrollSnapStop: 'always' }}>
+            <div data-index={1} className="snap-start">
               <Suspense fallback={PAGE_LOADER}><MemoriesPage /></Suspense>
             </div>
-            <div data-index={2} className="snap-start" style={{ scrollSnapStop: 'always' }}>
+            <div data-index={2} className="snap-start">
               <Suspense fallback={PAGE_LOADER}><MessagePage /></Suspense>
             </div>
-            <div data-index={3} className="snap-start" style={{ scrollSnapStop: 'always' }}>
+            <div data-index={3} className="snap-start">
               <Suspense fallback={PAGE_LOADER}>
                 <FinalPage onContinue={handleContinue} />
               </Suspense>
