@@ -3,7 +3,7 @@ import { useRef, useMemo } from 'react'
 
 const TOTAL = 4
 
-export default function ScrollDown({ current }: { current: number }) {
+export default function ScrollDown({ current, label = 'Scroll' }: { current: number; label?: string }) {
   const ref = useRef<HTMLDivElement>(null)
   const isVisible = useInView(ref, { margin: '-60px 0px' })
   const dots = useMemo(() => Array.from({ length: TOTAL }), [])
@@ -63,7 +63,7 @@ export default function ScrollDown({ current }: { current: number }) {
         />
       </motion.div>
       <span className="font-mono text-[5px] md:text-[6px] uppercase tracking-[0.4em] text-white/15">
-        Scroll
+        {label}
       </span>
     </motion.div>
   )

@@ -60,7 +60,7 @@ export default function MessagePage() {
             whileInView={{ opacity: 1 }}
             viewport={{ margin: '-40px' }}
             transition={{ duration: 1.3, delay: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="font-mono text-[7px] md:text-[8px] text-right tracking-[0.15em] text-white/15 hover:text-white/25 transition-colors duration-700 ease-premium italic"
+            className="font-mono text-[7px] md:text-[8px] text-right tracking-[0.15em] text-white/15 hover:text-white/25 active:text-white/25 transition-colors duration-700 ease-premium italic"
           >
             {HIDDEN_HINT}
           </motion.p>

@@ -279,7 +279,7 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute bottom-8"
+            className="absolute bottom-6"
           >
             <span className="font-mono text-[5px] md:text-[6px] uppercase tracking-[0.5em] text-white/[0.07]">
               01 · 08
@@ -314,11 +314,11 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
             <motion.div
               animate={decorPhase >= 3 ? { y: [0, -0.5, 0] } : {}}
               transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-              whileHover={{ scale: 1.03, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
-              whileTap={{ scale: 0.96, transition: { type: 'spring', stiffness: 500, damping: 15 } }}
             >
-              <button
-                onClick={() => { if (!triggered) { setTriggered(true); onContinue?.() } }}
+              <motion.button
+                onClick={() => { if (!triggered) { setTriggered(true); setTimeout(() => onContinue?.(), 250) } }}
+                whileHover={{ scale: 1.03, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
+                whileTap={{ scale: 1.03, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
                 className="relative rounded-full px-14 py-[18px] md:px-16 md:py-[22px] cursor-pointer overflow-hidden group"
                 style={{
                   background: 'rgba(255,255,255,0.06)',
@@ -341,7 +341,7 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
 
                 {/* gradient border */}
                 <div
-                  className="absolute inset-0 rounded-full transition-all duration-500 ease-premium group-hover:border-pink/40"
+                  className="absolute inset-0 rounded-full transition-all duration-500 ease-premium group-hover:border-pink/40 group-active:border-pink/40"
                   style={{
                     border: '1px solid rgba(244,114,182,0.3)',
                     boxShadow: 'inset 0 0 0 1px rgba(3,143,164,0.25)',
@@ -349,7 +349,7 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
                 />
 
                 {decorPhase >= 3 && (
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-pink/[0.05] via-white/[0.02] to-sky/[0.05] group-hover:from-pink/[0.15] group-hover:to-sky/[0.15] transition-all duration-500 ease-premium" />
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-pink/[0.05] via-white/[0.02] to-sky/[0.05] group-hover:from-pink/[0.15] group-hover:to-sky/[0.15] group-active:from-pink/[0.15] group-active:to-sky/[0.15] transition-all duration-500 ease-premium" />
                 )}
 
                 <span
@@ -363,7 +363,7 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
                 >
                   Step Inside
                 </span>
-              </button>
+              </motion.button>
             </motion.div>
           </motion.div>
         )}

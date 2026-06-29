@@ -153,7 +153,8 @@ function LoadingBar({ value, showGlow }: { value: number; showGlow: boolean }) {
 
 export default function IntroGate({ onEnter }: { onEnter: () => void }) {
   const isMobile = useIsMobile()
-  const [phase, setPhase] = useState<'booting' | 'shreya' | 'ready'>('booting')
+  const [scene, setScene] = useState<'intro' | 'open'>('intro')
+  const [phase, setPhase] = useState<'booting' | 'shreya'>('booting')
   const shreyaShowAtRef = useRef(0)
   const [fontsReady, setFontsReady] = useState(false)
   const [triggered, setTriggered] = useState(false)
@@ -162,11 +163,10 @@ export default function IntroGate({ onEnter }: { onEnter: () => void }) {
     document.fonts.ready.then(() => setFontsReady(true))
   }, [])
 
-  const { progress, loadingComplete } = useLoadingProgress()
+  const { progress, loadingComplete } = useLoadingProgress({ minDuration: 6000 })
   const fullyReady = loadingComplete && fontsReady
   const barScale = progress / 100
 
-  // booting → shreya at ~60% progress
   useEffect(() => {
     if (phase === 'booting' && progress >= 60) {
       setPhase('shreya')
@@ -174,21 +174,19 @@ export default function IntroGate({ onEnter }: { onEnter: () => void }) {
     }
   }, [progress, phase])
 
-  // shreya → ready when fully loaded + emotional pause satisfied
   useEffect(() => {
-    if (phase !== 'shreya' || !fullyReady) return
+    if (phase !== 'shreya' || !fullyReady || scene === 'open') return
     const elapsed = Date.now() - shreyaShowAtRef.current
-    const remaining = Math.max(0, 1800 - elapsed)
-    const t = setTimeout(() => setPhase('ready'), remaining)
+    const remaining = Math.max(0, 200 - elapsed)
+    const t = setTimeout(() => setScene('open'), remaining)
     return () => clearTimeout(t)
-  }, [phase, fullyReady])
+  }, [phase, fullyReady, scene])
 
-  // fallback: force ready after 12s
   useEffect(() => {
-    if (phase === 'ready') return
-    const t = setTimeout(() => setPhase('ready'), 12000)
+    if (scene === 'open') return
+    const t = setTimeout(() => setScene('open'), 12000)
     return () => clearTimeout(t)
-  }, [phase])
+  }, [scene])
 
   const particles = useMemo<Particle[]>(() =>
     Array.from({ length: isMobile ? 3 : 6 }, (_, i) => ({
@@ -207,63 +205,73 @@ export default function IntroGate({ onEnter }: { onEnter: () => void }) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#050508]"
+      className="fixed inset-0 z-[100] bg-[#050508]"
     >
-      <CornerFrames />
+      <AnimatePresence mode="wait">
+        {scene === 'intro' ? (
+          <motion.div
+            key="intro-scene"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.94 }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute inset-0 flex flex-col items-center justify-center"
+          >
+            <CornerFrames />
+            <div className="absolute inset-[-50%] flex items-center justify-center pointer-events-none overflow-hidden">
+              <div className="absolute w-[60%] h-[80%] bg-pink/[0.025] blur-[120px] rounded-full" />
+              <div className="absolute w-[60%] h-[80%] bg-sky/[0.02] blur-[120px] rounded-full" />
+            </div>
 
-      <div className="absolute inset-[-50%] flex items-center justify-center pointer-events-none overflow-hidden">
-        <div className="absolute w-[60%] h-[80%] bg-pink/[0.025] blur-[120px] rounded-full" />
-        <div className="absolute w-[60%] h-[80%] bg-sky/[0.02] blur-[120px] rounded-full" />
-      </div>
+            {phase === 'shreya' && (
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                {particles.map((p, i) => (
+                  <DustParticle key={i} p={p} />
+                ))}
+              </div>
+            )}
 
-      {phase !== 'booting' && (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {particles.map((p, i) => (
-            <DustParticle key={i} p={p} />
-          ))}
-        </div>
-      )}
+            {/* Fixed stage — Shreya (top) + loading bar + status message, all on one page */}
+            <div className="relative z-10 flex flex-col items-center" style={{ height: '304px' }}>
+              <div className="flex items-center justify-center overflow-visible" style={{ height: '80px', width: '320px' }}>
+                {phase === 'shreya' && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <ShreyaTitle
+                      size="intro"
+                      delayStart={0.1}
+                      staggerDelay={0.12}
+                      gradient={LOADING_GRADIENT}
+                      glow="subtle"
+                    />
+                  </motion.div>
+                )}
+              </div>
 
-      {/* ── FIXED STAGE: bolted into concrete, never shifts ── */}
-      <div className="relative z-10 flex flex-col items-center" style={{ height: '304px' }}>
-        {/* Shreya slot — fixed 80px, always reserved */}
-        <div className="flex items-center justify-center overflow-visible" style={{ height: '80px', width: '320px' }}>
-          {phase !== 'booting' && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <ShreyaTitle
-                size="intro"
-                delayStart={0.1}
-                staggerDelay={0.12}
-                gradient={LOADING_GRADIENT}
-                glow="subtle"
-              />
-            </motion.div>
-          )}
-        </div>
+              <div style={{ height: '24px' }} />
 
-        <div style={{ height: '24px' }} />
+              <div className="flex flex-col items-center gap-4">
+                <div className="flex items-center justify-center" style={{ height: '16px' }}>
+                  <LoadingBar value={barScale} showGlow={progress >= 80} />
+                </div>
 
-        {/* Bar slot — fixed 16px, always present */}
-        <div className="flex items-center justify-center" style={{ height: '16px' }}>
-          <LoadingBar value={barScale} showGlow={progress >= 80} />
-        </div>
-
-        <div style={{ height: '24px' }} />
-
-        {/* Bottom slot — fixed 160px, content swaps inside */}
-        <div className="flex items-start justify-center overflow-visible" style={{ height: '160px', width: '320px' }}>
-          {phase === 'booting' && <StatusMessage />}
-          {phase === 'ready' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-col items-center gap-6"
-            >
+                {phase === 'booting' && <StatusMessage />}
+              </div>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="open-scene"
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute inset-0 flex flex-col items-center justify-center"
+          >
+            <div className="relative z-10 flex flex-col items-center gap-6">
               <motion.div
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -277,10 +285,10 @@ export default function IntroGate({ onEnter }: { onEnter: () => void }) {
               </motion.div>
 
               <motion.button
-                onClick={() => { if (!triggered) { setTriggered(true); onEnter() } }}
+                onClick={() => { if (!triggered) { setTriggered(true); setTimeout(() => onEnter(), 250) } }}
                 className="relative group cursor-pointer"
                 whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
+                whileTap={{ scale: 1.04 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               >
                 <motion.div
@@ -293,10 +301,10 @@ export default function IntroGate({ onEnter }: { onEnter: () => void }) {
                   animate={{ opacity: [0.35, 0.65, 0.35] }}
                   transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-pink/10 to-sky/10 blur-[40px] rounded-2xl opacity-40 group-hover:opacity-80 transition-opacity duration-500 ease-premium pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-r from-pink/10 to-sky/10 blur-[40px] rounded-2xl opacity-40 group-hover:opacity-80 group-active:opacity-80 transition-opacity duration-500 ease-premium pointer-events-none" />
 
-                <div className="relative px-10 py-4 md:px-14 md:py-5 rounded-2xl border border-white/15 bg-white/[0.04] backdrop-blur-sm group-hover:border-pink/30 group-hover:bg-white/[0.07] transition-all duration-500 ease-premium">
-                  <span className="relative font-display text-lg md:text-xl uppercase italic tracking-[0.2em] text-white/70 transition-colors duration-500 ease-premium group-hover:text-white">
+                <div className="relative px-10 py-4 md:px-14 md:py-5 rounded-2xl border border-white/15 bg-white/[0.04] backdrop-blur-sm group-hover:border-pink/30 group-hover:bg-white/[0.07] group-active:border-pink/30 group-active:bg-white/[0.07] transition-all duration-500 ease-premium">
+                  <span className="relative font-display text-lg md:text-xl uppercase italic tracking-[0.2em] text-white/70 transition-colors duration-500 ease-premium group-hover:text-white group-active:text-white">
                     Open
                   </span>
                 </div>
@@ -313,10 +321,10 @@ export default function IntroGate({ onEnter }: { onEnter: () => void }) {
                   A little something, just for you
                 </span>
               </motion.div>
-            </motion.div>
-          )}
-        </div>
-      </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }

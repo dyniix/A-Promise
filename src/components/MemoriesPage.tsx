@@ -36,12 +36,12 @@ const NavButton = memo(function NavButton({ direction, onClick }: { direction: '
     <motion.button
       onClick={onClick}
       whileHover={{ scale: 1.06 }}
-      whileTap={{ scale: 0.94 }}
+      whileTap={{ scale: 1.06 }}
       transition={{ type: 'spring', stiffness: 400, damping: 18 }}
       className={`w-9 h-9 flex items-center justify-center rounded-full border border-white/[0.08] ${
         direction === 'prev'
-          ? 'text-white/30 hover:text-pink/70 hover:border-pink/30 transition-colors duration-500 ease-premium'
-          : 'text-white/30 hover:text-sky/70 hover:border-sky/30 transition-colors duration-500 ease-premium'
+          ? 'text-white/30 hover:text-pink/70 hover:border-pink/30 active:text-pink/70 active:border-pink/30 transition-colors duration-500 ease-premium'
+          : 'text-white/30 hover:text-sky/70 hover:border-sky/30 active:text-sky/70 active:border-sky/30 transition-colors duration-500 ease-premium'
       }`}
     >
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -126,7 +126,7 @@ export default function MemoriesPage() {
                 key={i}
                 onClick={() => { if (!locked) { setLocked(true); setActive(i); setTimeout(() => setLocked(false), 800) } }}
                 whileHover={{ scale: 1.2 }}
-                whileTap={{ scale: 0.85 }}
+                whileTap={{ scale: 1.2 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 15 }}
                 className={`rounded-full cursor-pointer ${
                   i === active ? 'w-5 h-1.5 bg-gradient-to-r from-pink/70 to-sky/70' : 'w-1.5 h-1.5 bg-white/15'

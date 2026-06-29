@@ -20,13 +20,13 @@ export default function NextPage({ onBack }: { onBack?: () => void }) {
       {/* back to home button */}
       {stage >= 1 && (
         <motion.button
-          onClick={() => { if (!triggered) { setTriggered(true); onBack?.() } }}
+          onClick={() => { if (!triggered) { setTriggered(true); setTimeout(() => onBack?.(), 250) } }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
           whileHover={{ scale: 1.04, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
-          whileTap={{ scale: 0.96, transition: { type: 'spring', stiffness: 500, damping: 15 } }}
-          className="absolute top-8 right-8 font-mono text-[6px] md:text-[7px] uppercase tracking-[0.3em] text-white/15 hover:text-white/40 transition-colors duration-500 ease-premium cursor-pointer"
+          whileTap={{ scale: 1.04, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
+          className="absolute top-8 right-8 font-mono text-[6px] md:text-[7px] uppercase tracking-[0.3em] text-white/15 hover:text-white/40 active:text-white/40 transition-colors duration-500 ease-premium cursor-pointer"
         >
           &larr; Back to Home
         </motion.button>

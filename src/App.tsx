@@ -97,27 +97,35 @@ export default function App() {
           <SectionIndicator active={active} opacity={opacity} scale={scale} />
         )}
 
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          style={{ willChange: 'opacity' }}
+        >
         {nextState === 'hidden' && (
           <div
             ref={containerRef}
-            className="h-dvh snap-y snap-proximity hide-scrollbar overflow-y-auto"
+            className="h-dvh snap-y snap-mandatory hide-scrollbar overflow-y-auto"
+            style={{ willChange: 'scroll-position' }}
           >
-            <div data-index={0} className="snap-start">
+            <div data-index={0} className="snap-start" style={{ scrollSnapStop: 'always' }}>
               <Suspense fallback={PAGE_LOADER}><HeroPage /></Suspense>
             </div>
-            <div data-index={1} className="snap-start">
+            <div data-index={1} className="snap-start" style={{ scrollSnapStop: 'always' }}>
               <Suspense fallback={PAGE_LOADER}><MemoriesPage /></Suspense>
             </div>
-            <div data-index={2} className="snap-start">
+            <div data-index={2} className="snap-start" style={{ scrollSnapStop: 'always' }}>
               <Suspense fallback={PAGE_LOADER}><MessagePage /></Suspense>
             </div>
-            <div data-index={3} className="snap-start">
+            <div data-index={3} className="snap-start" style={{ scrollSnapStop: 'always' }}>
               <Suspense fallback={PAGE_LOADER}>
                 <FinalPage onContinue={handleContinue} />
               </Suspense>
             </div>
           </div>
         )}
+        </motion.div>
 
         {nextState === 'preparing' && (
           <TransitionOverlay onReveal={handleReveal} />
