@@ -47,7 +47,7 @@ export default function MessagePage() {
           transition={{ duration: 1.3, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="glass rounded-2xl p-8 md:p-10 w-full"
         >
-          <p className="font-display text-sm md:text-base text-white/60 leading-[1.9] italic whitespace-pre-line">
+          <p className="font-display text-sm md:text-base text-white/70 leading-[1.9] italic whitespace-pre-line">
             {GENERIC_MESSAGE}
           </p>
 
@@ -71,7 +71,7 @@ export default function MessagePage() {
           whileInView={{ opacity: 1 }}
           viewport={{ margin: '-40px' }}
           transition={{ duration: 1.3, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="font-mono text-[7px] text-white/10 mt-6 tracking-[0.3em] uppercase"
+          className="font-mono text-[7px] text-white/20 mt-6 tracking-[0.3em] uppercase"
         >
           With warmth, someone who remembers
         </motion.p>

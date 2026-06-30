@@ -1,5 +1,4 @@
 import { motion } from 'motion/react'
-import { useEffect, useState } from 'react'
 import { useIsMobile } from '../hooks/useIsMobile'
 
 interface ShreyaTitleProps {
@@ -40,31 +39,6 @@ export default function ShreyaTitle({
 }: ShreyaTitleProps) {
   const isHero = size === 'hero'
   const isMobile = useIsMobile()
-  const [driftPhase, setDriftPhase] = useState(0)
-
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>
-    let mounted = true
-
-    const cycle = () => {
-      if (!mounted) return
-      setDriftPhase(1)
-      setTimeout(() => {
-        if (!mounted) return
-        setDriftPhase(2)
-        setTimeout(() => {
-          if (!mounted) return
-          setDriftPhase(0)
-          timer = setTimeout(cycle, 15000)
-        }, 3000)
-      }, 2500)
-    }
-
-    timer = setTimeout(cycle, 10000)
-    return () => { mounted = false; clearTimeout(timer) }
-  }, [])
-
-  const driftX = driftPhase === 1 ? 1.5 : driftPhase === 2 ? 0 : 0
 
   return (
     <div className="relative flex items-center justify-center">
@@ -93,53 +67,46 @@ export default function ShreyaTitle({
         transition={{ duration: 10, repeat: active ? Infinity : 0, ease: 'easeInOut' }}
         style={{ willChange: 'transform' }}
       >
-        {/* gradient drift */}
-        <motion.div
-          animate={{ x: active ? driftX : 0 }}
-          transition={{ duration: driftPhase === 1 ? 2.5 : 3, ease: 'easeInOut' }}
-          style={{ willChange: 'transform' }}
-        >
-          {/* letter layout */}
-          <div className="flex items-center gap-2 md:gap-3">
-            {LETTERS.map((letter, i) => (
-              <motion.span
-                key={i}
-                initial={animate
-                  ? isMobile
-                    ? { opacity: 0, y: 20, scale: 0.92 }
-                    : { opacity: 0, y: 20, filter: 'blur(4px)' }
-                  : { opacity: 1 }
-                }
-                animate={animate
-                  ? isMobile
-                    ? { opacity: 1, y: 0, scale: 1 }
-                    : { opacity: 1, y: 0, filter: 'blur(0px)' }
-                  : {}
-                }
-                transition={animate
-                  ? { delay: delayStart + i * staggerDelay, duration: 1.3, ease: [0.16, 1, 0.3, 1] }
-                  : {}
-                }
-                className={`font-display uppercase italic tracking-tight leading-none overflow-visible inline-block ${
-                  isHero
-                    ? 'text-[clamp(3.5rem,18vw,10rem)] py-[0.15em] px-[0.04em]'
-                    : 'text-3xl md:text-4xl py-[0.1em] px-[0.02em]'
-                }`}
-                style={{
-                  backgroundImage: gradient,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  color: 'transparent',
-                  backgroundSize: '600% 100%',
-                  backgroundPosition: `${(i / (LETTERS.length - 1)) * 100}% 50%`,
-                  willChange: 'transform, opacity',
-                }}
-              >
-                {letter}
-              </motion.span>
-            ))}
-          </div>
-        </motion.div>
+        {/* letter layout */}
+        <div className="flex items-center gap-2 md:gap-3">
+          {LETTERS.map((letter, i) => (
+            <motion.span
+              key={i}
+              initial={animate
+                ? isMobile
+                  ? { opacity: 0, y: 20, scale: 0.92 }
+                  : { opacity: 0, y: 20, filter: 'blur(4px)' }
+                : { opacity: 1 }
+              }
+              animate={animate
+                ? isMobile
+                  ? { opacity: 1, y: 0, scale: 1 }
+                  : { opacity: 1, y: 0, filter: 'blur(0px)' }
+                : {}
+              }
+              transition={animate
+                ? { delay: delayStart + i * staggerDelay, duration: 1.3, ease: [0.16, 1, 0.3, 1] }
+                : {}
+              }
+              className={`font-display uppercase italic tracking-tight leading-none overflow-visible inline-block ${
+                isHero
+                  ? 'text-[clamp(3.5rem,18vw,10rem)] py-[0.15em] px-[0.04em]'
+                  : 'text-3xl md:text-4xl py-[0.1em] px-[0.02em]'
+              }`}
+              style={{
+                backgroundImage: gradient,
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                color: 'transparent',
+                backgroundSize: '600% 100%',
+                backgroundPosition: `${(i / (LETTERS.length - 1)) * 100}% 50%`,
+                willChange: 'transform, opacity',
+              }}
+            >
+              {letter}
+            </motion.span>
+          ))}
+        </div>
       </motion.div>
     </div>
   )

@@ -122,11 +122,9 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
   useEffect(() => {
     const t1 = setTimeout(() => setStage(1), 2000)
     const t2 = setTimeout(() => setStage(2), 4000)
-    const t3 = setTimeout(() => setStage(3), 6500)
-    const t4 = setTimeout(() => setStage(4), 8500)
-    const t5 = setTimeout(() => setStage(5), 11000)
+    const t3 = setTimeout(() => setStage(3), 11000)
     return () => {
-      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); clearTimeout(t5)
+      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3)
     }
   }, [])
 
@@ -273,22 +271,8 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
           </motion.div>
         )}
 
-        {/* footer */}
-        {stage >= 4 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute bottom-6"
-          >
-            <span className="font-mono text-[5px] md:text-[6px] uppercase tracking-[0.5em] text-white/[0.07]">
-              01 · 08
-            </span>
-          </motion.div>
-        )}
-
         {/* continue button — premium glass pill */}
-        {stage >= 5 && (
+        {stage >= 3 && (
           <motion.div
             className="absolute bottom-16 md:bottom-20 flex flex-col items-center"
             initial={isMobile ? { opacity: 0, y: 8, scale: 0.95 } : { opacity: 0, y: 14, filter: 'blur(8px)' }}

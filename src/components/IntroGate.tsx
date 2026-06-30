@@ -199,6 +199,8 @@ export default function IntroGate({ onEnter }: { onEnter: () => void }) {
     })),
   [])
 
+  const openVisible = scene === 'open'
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -207,124 +209,101 @@ export default function IntroGate({ onEnter }: { onEnter: () => void }) {
       transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
       className="fixed inset-0 z-[100] bg-[#050508]"
     >
-      <AnimatePresence mode="wait">
-        {scene === 'intro' ? (
-          <motion.div
-            key="intro-scene"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 0.94 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute inset-0 flex flex-col items-center justify-center"
-          >
-            <CornerFrames />
-            <div className="absolute inset-[-50%] flex items-center justify-center pointer-events-none overflow-hidden">
-              <div className="absolute w-[60%] h-[80%] bg-pink/[0.025] blur-[120px] rounded-full" />
-              <div className="absolute w-[60%] h-[80%] bg-sky/[0.02] blur-[120px] rounded-full" />
-            </div>
+      {/* ── INTRO SCENE ── always mounted, visibility via animate ── */}
+      <motion.div
+        animate={openVisible ? { opacity: 0, scale: 0.94 } : { opacity: 1, scale: 1 }}
+        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute inset-0 flex flex-col items-center justify-center"
+        style={{ pointerEvents: openVisible ? 'none' : 'auto' }}
+      >
+        <CornerFrames />
+        <div className="absolute inset-[-50%] flex items-center justify-center pointer-events-none overflow-hidden">
+          <div className="absolute w-[60%] h-[80%] bg-pink/[0.025] blur-[120px] rounded-full" />
+          <div className="absolute w-[60%] h-[80%] bg-sky/[0.02] blur-[120px] rounded-full" />
+        </div>
 
-            {phase === 'shreya' && (
-              <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                {particles.map((p, i) => (
-                  <DustParticle key={i} p={p} />
-                ))}
-              </div>
-            )}
-
-            {/* Fixed stage — Shreya (top) + loading bar + status message, all on one page */}
-            <div className="relative z-10 flex flex-col items-center" style={{ height: '304px' }}>
-              <div className="flex items-center justify-center overflow-visible" style={{ height: '80px', width: '320px' }}>
-                {phase === 'shreya' && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    <ShreyaTitle
-                      size="intro"
-                      delayStart={0.1}
-                      staggerDelay={0.12}
-                      gradient={LOADING_GRADIENT}
-                      glow="subtle"
-                    />
-                  </motion.div>
-                )}
-              </div>
-
-              <div style={{ height: '24px' }} />
-
-              <div className="flex flex-col items-center gap-4">
-                <div className="flex items-center justify-center" style={{ height: '16px' }}>
-                  <LoadingBar value={barScale} showGlow={progress >= 80} />
-                </div>
-
-                {phase === 'booting' && <StatusMessage />}
-              </div>
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="open-scene"
-            initial={{ opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.96 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute inset-0 flex flex-col items-center justify-center"
-          >
-            <div className="relative z-10 flex flex-col items-center gap-6">
-              <motion.div
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="flex flex-col items-center gap-3"
-              >
-                <span className="font-mono text-[8px] md:text-[9px] uppercase tracking-[0.4em] text-white/30">
-                  A Birthday Wish
-                </span>
-                <div className="w-6 h-px bg-gradient-to-r from-pink/40 to-sky/40" />
-              </motion.div>
-
-              <motion.button
-                onClick={() => { if (!triggered) { setTriggered(true); setTimeout(() => onEnter(), 250) } }}
-                className="relative group cursor-pointer"
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 1.04 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              >
-                <motion.div
-                  className="absolute inset-0 rounded-2xl pointer-events-none"
-                  style={{
-                    background: 'radial-gradient(ellipse, rgba(244,114,182,0.15), rgba(3,143,164,0.15), transparent 70%)',
-                    filter: 'blur(25px)',
-                    willChange: 'opacity',
-                  }}
-                  animate={{ opacity: [0.35, 0.65, 0.35] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-pink/10 to-sky/10 blur-[40px] rounded-2xl opacity-40 group-hover:opacity-80 group-active:opacity-80 transition-opacity duration-500 ease-premium pointer-events-none" />
-
-                <div className="relative px-10 py-4 md:px-14 md:py-5 rounded-2xl border border-white/15 bg-white/[0.04] backdrop-blur-sm group-hover:border-pink/30 group-hover:bg-white/[0.07] group-active:border-pink/30 group-active:bg-white/[0.07] transition-all duration-500 ease-premium">
-                  <span className="relative font-display text-lg md:text-xl uppercase italic tracking-[0.2em] text-white/70 transition-colors duration-500 ease-premium group-hover:text-white group-active:text-white">
-                    Open
-                  </span>
-                </div>
-              </motion.button>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="flex flex-col items-center gap-1.5"
-              >
-                <div className="w-4 h-px bg-gradient-to-r from-pink/30 via-sky/30 to-pink/30" />
-                <span className="font-mono text-[6px] md:text-[7px] uppercase tracking-[0.5em] text-white/20">
-                  A little something, just for you
-                </span>
-              </motion.div>
-            </div>
-          </motion.div>
+        {phase === 'shreya' && !openVisible && (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {particles.map((p, i) => (
+              <DustParticle key={i} p={p} />
+            ))}
+          </div>
         )}
-      </AnimatePresence>
+
+        <div className="relative z-10 flex flex-col items-center" style={{ height: '304px' }}>
+          <div className="flex items-center justify-center overflow-visible" style={{ height: '80px', width: '320px' }}>
+            {phase === 'shreya' && (
+              <ShreyaTitle
+                size="intro"
+                delayStart={0.1}
+                staggerDelay={0.12}
+                gradient={LOADING_GRADIENT}
+                glow="subtle"
+              />
+            )}
+          </div>
+
+          <div style={{ height: '10px' }} />
+
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center justify-center" style={{ height: '16px' }}>
+              <LoadingBar value={barScale} showGlow={progress >= 80} />
+            </div>
+
+            {phase === 'booting' && <StatusMessage />}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ── OPEN SCENE ── always mounted (pre-rendered), instant appearance ── */}
+      <motion.div
+        animate={openVisible ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.15, ease: 'easeOut' }}
+        className="absolute inset-0 flex flex-col items-center justify-center"
+        style={{ pointerEvents: openVisible ? 'auto' : 'none' }}
+      >
+        <div className="relative z-10 flex flex-col items-center gap-6">
+          <div className="flex flex-col items-center gap-3">
+            <span className="font-mono text-[8px] md:text-[9px] uppercase tracking-[0.4em] text-white/30">
+              A Birthday Wish
+            </span>
+            <div className="w-6 h-px bg-gradient-to-r from-pink/40 to-sky/40" />
+          </div>
+
+          <motion.button
+            onClick={() => { if (!triggered) { setTriggered(true); setTimeout(() => onEnter(), 250) } }}
+            className="relative group cursor-pointer"
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 1.04 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          >
+            <motion.div
+              className="absolute inset-0 rounded-2xl pointer-events-none"
+              style={{
+                background: 'radial-gradient(ellipse, rgba(244,114,182,0.15), rgba(3,143,164,0.15), transparent 70%)',
+                filter: 'blur(25px)',
+                willChange: 'opacity',
+              }}
+              animate={{ opacity: [0.35, 0.65, 0.35] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-pink/10 to-sky/10 blur-[40px] rounded-2xl opacity-40 group-hover:opacity-80 group-active:opacity-80 transition-opacity duration-500 ease-premium pointer-events-none" />
+
+            <div className="relative px-10 py-4 md:px-14 md:py-5 rounded-2xl border border-white/15 bg-white/[0.04] backdrop-blur-sm group-hover:border-pink/30 group-hover:bg-white/[0.07] group-active:border-pink/30 group-active:bg-white/[0.07] transition-all duration-500 ease-premium">
+              <span className="relative font-display text-lg md:text-xl uppercase italic tracking-[0.2em] text-white/70 transition-colors duration-500 ease-premium group-hover:text-white group-active:text-white">
+                Open
+              </span>
+            </div>
+          </motion.button>
+
+          <div className="flex flex-col items-center gap-1.5">
+            <div className="w-4 h-px bg-gradient-to-r from-pink/30 via-sky/30 to-pink/30" />
+            <span className="font-mono text-[6px] md:text-[7px] uppercase tracking-[0.5em] text-white/20">
+              A little something, just for you
+            </span>
+          </div>
+        </div>
+      </motion.div>
     </motion.div>
   )
 }
