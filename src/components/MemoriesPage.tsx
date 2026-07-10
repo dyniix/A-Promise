@@ -13,20 +13,20 @@ interface Memory {
 const MEMORIES: Memory[] = [
   {
     id: 1,
-    title: 'Memory One',
-    text: 'This is where a memory will go. Something that matters.',
+    title: 'Sweet & Caring',
+    text: 'You are such a good person—always so sweet, caring, and full of positive energy. Having you as a sister is a constant reminder of how beautiful genuine kindness is. You are truly special.',
     icon: '\u2726',
   },
   {
     id: 2,
-    title: 'Memory Two',
-    text: 'This is where another memory will go. Replace this text.',
+    title: 'Playing Roblox',
+    text: 'Playing Roblox together was always so much fun. It was never really about the game itself, but just the laughter and the simple joy of playing and giggling together.',
     icon: '\u2727',
   },
   {
     id: 3,
-    title: 'Memory Three',
-    text: 'One more memory slot. Fill when ready.',
+    title: 'Tea & Gossips \u{1F92D}',
+    text: 'I know how much you love tea! I really miss our fun gossips and those sweet, polite chats we used to have. You are always so polite, and truly the best sister I could ask for.',
     icon: '\u2606',
   },
 ]
@@ -51,19 +51,66 @@ const NavButton = memo(function NavButton({ direction, onClick }: { direction: '
   )
 })
 
-function MemoryCard({ memory, isMobile: mobile }: { memory: Memory; isMobile: boolean }) {
+const SPARKLES = [
+  { x: '15%', y: '10%', size: 2, delay: 0 },
+  { x: '85%', y: '20%', size: 1.5, delay: 1.2 },
+  { x: '75%', y: '80%', size: 2, delay: 0.6 },
+  { x: '20%', y: '85%', size: 1.5, delay: 1.8 },
+  { x: '50%', y: '5%', size: 1, delay: 2.4 },
+]
+
+function SparkleDot({ s, mobile }: { s: typeof SPARKLES[0]; mobile: boolean }) {
+  if (mobile && s.size < 2) return null
   return (
     <motion.div
-      initial={mobile ? { opacity: 0, y: 10, scale: 0.96 } : { opacity: 0, y: 15, filter: 'blur(5px)' }}
-      animate={mobile ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
-      exit={mobile ? { opacity: 0, y: -10, scale: 0.96 } : { opacity: 0, y: -15, filter: 'blur(5px)' }}
-      transition={{ duration: 1.3, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      className="glass rounded-2xl p-8 md:p-10 w-full text-center"
-    >
-      <span className="text-3xl md:text-4xl text-pink/60 block mb-4">{memory.icon}</span>
-      <h3 className="font-display text-lg md:text-xl text-white/80 italic mb-3">{memory.title}</h3>
-      <p className="font-sans text-sm text-white/40 leading-relaxed">{memory.text}</p>
-    </motion.div>
+      className="absolute rounded-full bg-white pointer-events-none"
+      style={{
+        left: s.x, top: s.y, width: s.size, height: s.size,
+        willChange: 'opacity, scale',
+      }}
+      animate={{ opacity: [0, 0.7, 0], scale: [0, 1.2, 0] }}
+      transition={{
+        duration: 2.5, repeat: Infinity, delay: s.delay,
+        ease: 'easeInOut',
+      }}
+    />
+  )
+}
+
+function MemoryCard({ memory, isMobile: mobile }: { memory: Memory; isMobile: boolean }) {
+  return (
+    <div className="relative">
+      {/* breathing glow */}
+      <motion.div
+        className="absolute -inset-8 rounded-full pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse, rgba(244,114,182,0.08), transparent 60%)',
+          filter: 'blur(40px)',
+          willChange: 'opacity, scale',
+        }}
+        animate={{ opacity: [0.3, 0.7, 0.3], scale: [0.92, 1.08, 0.92] }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+      />
+
+      {/* sparkles */}
+      {SPARKLES.map((s, i) => (
+        <SparkleDot key={i} s={s} mobile={mobile} />
+      ))}
+
+      <motion.div
+        initial={mobile ? { opacity: 0, y: 10, scale: 0.96 } : { opacity: 0, y: 15, filter: 'blur(5px)' }}
+        animate={mobile ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
+        exit={mobile ? { opacity: 0, y: -10, scale: 0.96 } : { opacity: 0, y: -15, filter: 'blur(5px)' }}
+        transition={{ duration: 0.4, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+        className="glass rounded-2xl p-8 md:p-10 w-full text-center shadow-[0_0_30px_rgba(244,114,182,0.06)]"
+      >
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink/10 to-sky/10 flex items-center justify-center mx-auto mb-5">
+          <span className="text-xl md:text-2xl text-pink/70">{memory.icon}</span>
+        </div>
+        <h3 className="font-display text-lg md:text-xl text-white/90 italic mb-3 leading-snug">{memory.title}</h3>
+        <p className="font-sans text-sm text-white/40 leading-relaxed">{memory.text}</p>
+      </motion.div>
+    </div>
   )
 }
 
@@ -86,7 +133,7 @@ export default function MemoriesPage() {
   }, [locked])
 
   return (
-    <section className="page relative bg-bg">
+    <section className="page relative bg-bg w-full min-h-dvh">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_80%,rgba(244,114,182,0.03)_0%,transparent_50%)] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col items-center w-full max-w-lg mx-auto px-6">

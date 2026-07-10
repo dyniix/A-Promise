@@ -21,8 +21,8 @@ export default function TransitionOverlay({ onReveal }: { onReveal: () => void }
     const t0 = setTimeout(() => setPhase(1), 100)
     const t1 = setTimeout(() => setPhase(2), 2800)
     const t2 = setTimeout(() => setPhase(3), 4200)
-    const t3 = setTimeout(() => setPhase(5), 14000)
-    const t4 = setTimeout(onReveal, 15000)
+    const t3 = setTimeout(() => setPhase(5), 9000)
+    const t4 = setTimeout(onReveal, 10000)
     return () => { clearTimeout(t0); clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4) }
   }, [onReveal])
 

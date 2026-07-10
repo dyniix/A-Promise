@@ -129,7 +129,7 @@ export default function FinalPage({ onContinue }: { onContinue?: () => void }) {
   }, [])
 
   return (
-    <section ref={sectionRef} className="page relative bg-bg overflow-hidden">
+    <section ref={sectionRef} className="page relative bg-bg overflow-hidden w-full min-h-dvh">
       {/* aurora layers — opacity+scale instead of x/y+blur */}
       {decorPhase >= 1 && (
         <>

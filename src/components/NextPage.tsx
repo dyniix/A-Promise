@@ -1,71 +1,283 @@
-import { motion } from 'motion/react'
-import { useEffect, useState } from 'react'
-import { useIsMobile } from '../hooks/useIsMobile'
+import { motion, AnimatePresence } from 'motion/react'
+import { useMemo, useState, useEffect } from 'react'
+
+const containerVariants = {
+  initial: {},
+  animate: {
+    transition: {
+      delayChildren: 0,
+      staggerChildren: 0.15,
+    },
+  },
+}
+
+const childVariants = {
+  initial: {
+    opacity: 0,
+    filter: 'blur(12px)',
+    y: 12,
+  },
+  animate: {
+    opacity: 1,
+    filter: 'blur(0px)',
+    y: 0,
+    transition: {
+      duration: 1.4,
+      ease: [0.16, 1, 0.3, 1] as const,
+    },
+  },
+}
+
+const ORBS = [
+  { x: '0%', y: '0%', color: 'rgba(3,143,164,0.1)', size: 600 },
+  { x: '60%', y: '50%', color: 'rgba(244,114,182,0.1)', size: 550 },
+  { x: '25%', y: '25%', color: 'rgba(168,85,247,0.05)', size: 700 },
+]
+
+const DUST_COUNT = 14
+
+const BURST_EMOJIS = ['\u2728', '\uD83D\uDC96', '\uD83C\uDF38', '\u2728', '\uD83D\uDC9C', '\uD83C\uDF1F']
 
 export default function NextPage({ onBack }: { onBack?: () => void }) {
-  const isMobile = useIsMobile()
-  const [stage, setStage] = useState(0)
-  const [triggered, setTriggered] = useState(false)
+  const [phase, setPhase] = useState<'gift' | 'burst' | 'letter'>('gift')
 
   useEffect(() => {
-    const t = setTimeout(() => setStage(1), 1200)
-    return () => clearTimeout(t)
+    const t1 = setTimeout(() => setPhase('burst'), 1500)
+    const t2 = setTimeout(() => setPhase('letter'), 2800)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [])
 
-  return (
-    <div className="fixed inset-0 bg-[#050508] flex items-center justify-center">
-      {/* soft ambient */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,rgba(244,114,182,0.03)_0%,rgba(3,143,164,0.02)_30%,transparent_60%)] pointer-events-none" />
+  const dust = useMemo(
+    () =>
+      Array.from({ length: DUST_COUNT }, (_, i) => ({
+        left: `${2 + (i * 7.3) % 96}%`,
+        bottom: `${-2 - (i % 3) * 4}%`,
+        delay: i * 0.6 + Math.random() * 0.5,
+        driftX: (i % 5 - 2) * 6,
+        driftY: 30 + (i % 4) * 15,
+        duration: 10 + (i % 3) * 4,
+        size: i % 3 === 0 ? 2 : 1.5,
+        fadeDelay: Math.random() * 3,
+      })),
+    [],
+  )
 
-      {/* back to home button */}
-      {stage >= 1 && (
-        <motion.button
-          onClick={() => { if (!triggered) { setTriggered(true); setTimeout(() => onBack?.(), 250) } }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
-          whileHover={{ scale: 1.04, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
-          whileTap={{ scale: 1.04, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
-          className="absolute top-8 right-8 font-mono text-[6px] md:text-[7px] uppercase tracking-[0.3em] text-white/15 hover:text-white/40 active:text-white/40 transition-colors duration-500 ease-premium cursor-pointer"
+  const burstParticles = useMemo(
+    () =>
+      BURST_EMOJIS.map((emoji, i) => ({
+        emoji,
+        x: (i % 3 - 1) * (60 + Math.random() * 80),
+        y: (Math.floor(i / 3) * 2 - 1) * (40 + Math.random() * 60),
+        delay: i * 0.03,
+        rotation: (Math.random() - 0.5) * 360,
+      })),
+    [],
+  )
+
+  return (
+    <div className="fixed inset-0 flex flex-col items-center justify-center min-h-screen w-full overflow-hidden select-none bg-gradient-to-b from-[#0a0a1a] via-[#110a1f] to-[#05050a] px-6 md:px-12">
+      {/* flash overlay */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none z-10"
+        style={{
+          background: 'radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.12) 0%, rgba(244,114,182,0.06) 40%, transparent 70%)',
+          willChange: 'opacity',
+        }}
+        initial={{ opacity: 0.4 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+      />
+
+      {/* ambient orbs */}
+      {ORBS.map((orb, i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            left: orb.x,
+            top: orb.y,
+            width: orb.size,
+            height: orb.size,
+            background: `radial-gradient(circle, ${orb.color}, transparent 70%)`,
+            filter: 'blur(140px)',
+            willChange: 'transform, opacity',
+          }}
+          animate={{ opacity: [0.12, 0.22, 0.12], scale: [0.9, 1.1, 0.9] }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay: i * 2,
+          }}
+        />
+      ))}
+
+      {/* floating magic dust */}
+      {dust.map((p, i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            left: p.left,
+            bottom: p.bottom,
+            width: p.size,
+            height: p.size,
+            background: 'rgba(244,114,182,0.25)',
+            boxShadow: '0 0 4px rgba(244,114,182,0.15), 0 0 8px rgba(3,143,164,0.1)',
+            willChange: 'transform, opacity',
+          }}
+          animate={{
+            y: [-p.driftY, p.driftY],
+            x: [-p.driftX, p.driftX],
+            opacity: [0, 0.5, 0],
+          }}
+          transition={{
+            duration: p.duration,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay: p.delay,
+            times: [0, 0.3 + p.fadeDelay * 0.05, 1],
+          }}
+        />
+      ))}
+
+      {/* ── PHASE 1 & 2: GIFT DROP + BURST ── */}
+      <AnimatePresence>
+        {phase !== 'letter' && (
+          <motion.div
+            key="gift-burst"
+            className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none"
+            exit={{ opacity: 0, transition: { duration: 0.3 } }}
+          >
+            {/* gift emoji drop */}
+            {phase === 'gift' && (
+              <motion.span
+                key="gift-emoji"
+                className="text-5xl md:text-6xl"
+                initial={{ y: -50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 200,
+                  damping: 12,
+                  mass: 0.8,
+                }}
+              >
+                {'\uD83D\uDC8C'}
+              </motion.span>
+            )}
+
+            {/* burst emojis */}
+            {phase === 'burst' && (
+              <motion.div
+                key="burst-container"
+                className="absolute inset-0 flex items-center justify-center"
+                initial={{ opacity: 1 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, transition: { duration: 0.2 } }}
+              >
+                {/* center pop */}
+                <motion.span
+                  className="text-5xl md:text-6xl absolute"
+                  initial={{ scale: 1, opacity: 1 }}
+                  animate={{ scale: 2, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  {'\uD83D\uDC8C'}
+                </motion.span>
+
+                {/* scattered particles */}
+                {burstParticles.map((p, i) => (
+                  <motion.span
+                    key={i}
+                    className="absolute text-lg md:text-xl"
+                    initial={{ x: 0, y: 0, opacity: 1, rotate: 0, scale: 0.5 }}
+                    animate={{
+                      x: p.x,
+                      y: p.y,
+                      opacity: 0,
+                      rotate: p.rotation,
+                      scale: 1,
+                    }}
+                    transition={{
+                      duration: 0.6,
+                      delay: p.delay,
+                      ease: [0.16, 1, 0.3, 1],
+                    }}
+                  >
+                    {p.emoji}
+                  </motion.span>
+                ))}
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── PHASE 3: LETTER REVEAL ── */}
+      {phase === 'letter' && (
+        <motion.div
+          className="relative z-10 flex flex-col items-center w-full max-w-[36rem] md:max-w-[42rem] mx-auto"
+          variants={containerVariants}
+          initial="initial"
+          animate="animate"
         >
-          &larr; Back to Home
-        </motion.button>
+          <motion.span
+            variants={childVariants}
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+            className="text-3xl md:text-4xl mb-4 will-change-transform"
+          >
+            {'\uD83E\uDDF8'}
+          </motion.span>
+
+          <motion.h1
+            variants={childVariants}
+            className="text-xl md:text-2xl font-semibold tracking-tight text-slate-100 mb-6 will-change-transform"
+            style={{ textShadow: '0 0 30px rgba(244,114,182,0.15), 0 0 60px rgba(3,143,164,0.08)' }}
+          >
+            A Little Wish, Just For You... <span className="text-pink/70">{'\u2728'}</span>
+          </motion.h1>
+
+          <motion.p
+            variants={childVariants}
+            className="text-sm md:text-base font-medium leading-relaxed md:leading-loose text-slate-300 mt-6 will-change-transform text-center max-w-[90%] md:max-w-none"
+          >
+            Didi, some years bring changes, but the promises we keep always stay the same. I wanted to create this little surprise just to remind you how incredibly special you are didi. Shreya, no matter what happens, I just want to see you truly happy and always smiling. Whatever has happened or will happen doesn&rsquo;t matter; I just want to see that smile. Didi you deserve every bit of peace and warmth this world has to offer. Even when distances grow, please know that you are always in my prayers. Keep shining, my sweetest sister. Happy Birthday once again! <span className="text-pink/50">{'\uD83C\uDF82'}</span><span className="text-sky/50">{'\uD83C\uDF88'}</span><span className="text-pink/50">{'\u2764'}</span><span className="text-sky/50">{'\u2728'}</span>
+          </motion.p>
+
+          <motion.footer
+            variants={childVariants}
+            className="font-mono text-[10px] md:text-xs font-normal tracking-widest text-slate-500 mt-10 will-change-transform"
+          >
+            Made with care. &bull; 01 &middot; 08
+          </motion.footer>
+        </motion.div>
       )}
 
-      {/* main content — staggered reveal */}
-      <motion.div
-        initial={isMobile ? { opacity: 0, y: 16, scale: 0.95 } : { opacity: 0, y: 30, filter: 'blur(8px)' }}
-        animate={isMobile ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
-        transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 flex flex-col items-center px-6 text-center"
+      {/* back button */}
+      <motion.button
+        onClick={() => onBack?.()}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2.5, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        whileHover={{ scale: 1.04, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
+        whileTap={{ scale: 1.04, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
+        className="absolute top-8 right-8 font-mono text-[6px] md:text-[7px] uppercase tracking-[0.3em] text-white/15 hover:text-white/40 active:text-white/40 transition-colors duration-500 ease-premium cursor-pointer z-20"
       >
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="font-display italic text-[clamp(1.2rem,4vw,2rem)] text-white/25 leading-[1.6] tracking-[0.02em]"
-        >
-          <span className="block">This chapter</span>
-          <span className="block mb-6">is still being written.</span>
-        </motion.p>
+        &larr; Back to Home
+      </motion.button>
 
-        <motion.div
-          initial={{ opacity: 0, scaleX: 0 }}
-          animate={{ opacity: 1, scaleX: 1 }}
-          transition={{ delay: 0.6, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="w-8 h-px bg-gradient-to-r from-pink/30 via-sky/30 to-pink/30 mb-6"
-          style={{ originX: 0.5 }}
-        />
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="font-sans text-[9px] md:text-[10px] text-white/15 tracking-[0.15em] uppercase"
-        >
-          Come back soon.
-        </motion.p>
-      </motion.div>
+      {/* hidden signature */}
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.08 }}
+        whileHover={{ opacity: 0.15, transition: { duration: 0.5 } }}
+        transition={{ delay: 3, duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+        className="fixed bottom-4 right-5 font-mono text-[8px] md:text-[9px] italic tracking-[0.05em] z-50 will-change-transform"
+      >
+        &mdash; The depth was always the signal.
+      </motion.p>
     </div>
   )
 }

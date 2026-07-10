@@ -48,6 +48,7 @@ export default function App() {
   const [entered, setEntered] = useState(false)
   const [nextState, setNextState] = useState<'hidden' | 'preparing' | 'revealed'>('hidden')
   const containerRef = useRef<HTMLDivElement>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
   const [active, setActive] = useState(0)
   const [scrollStarted, setScrollStarted] = useState(false)
 
@@ -78,9 +79,24 @@ export default function App() {
     }
   }, [active, nextState])
 
+  // preload NextPage during transition overlay so it's ready when revealed
+  useEffect(() => {
+    if (nextState === 'preparing') {
+      preloadNext()
+    }
+  }, [nextState])
+
   const { scrollYProgress } = useScroll({ container: containerRef })
   const opacity = useTransform(scrollYProgress, [0.95, 1], [1, 0])
   const scale = useTransform(scrollYProgress, [0.95, 1], [1, 0.92])
+
+  const handleEnter = useCallback(() => {
+    setEntered(true)
+    if (audioRef.current) {
+      audioRef.current.volume = 0.7
+      audioRef.current.play().catch(() => {})
+    }
+  }, [])
 
   const handleContinue = useCallback(() => setNextState('preparing'), [])
   const handleReveal = useCallback(() => setNextState('revealed'), [])
@@ -89,7 +105,7 @@ export default function App() {
   return (
     <>
       <AnimatePresence>
-        {!entered && <IntroGate onEnter={() => setEntered(true)} />}
+        {!entered && <IntroGate onEnter={handleEnter} />}
       </AnimatePresence>
 
       <div className="relative bg-bg">
@@ -109,16 +125,16 @@ export default function App() {
             className="h-dvh snap-y snap-mandatory hide-scrollbar overflow-y-auto"
             style={{ willChange: 'scroll-position' }}
           >
-            <div data-index={0} className="snap-start" style={{ scrollSnapStop: 'always' }}>
+            <div data-index={0} className="snap-start h-dvh">
               <Suspense fallback={PAGE_LOADER}><HeroPage /></Suspense>
             </div>
-            <div data-index={1} className="snap-start" style={{ scrollSnapStop: 'always' }}>
+            <div data-index={1} className="snap-start h-dvh">
               <Suspense fallback={PAGE_LOADER}><MemoriesPage /></Suspense>
             </div>
-            <div data-index={2} className="snap-start" style={{ scrollSnapStop: 'always' }}>
+            <div data-index={2} className="snap-start h-dvh">
               <Suspense fallback={PAGE_LOADER}><MessagePage /></Suspense>
             </div>
-            <div data-index={3} className="snap-start" style={{ scrollSnapStop: 'always' }}>
+            <div data-index={3} className="snap-start h-dvh">
               <Suspense fallback={PAGE_LOADER}>
                 <FinalPage onContinue={handleContinue} />
               </Suspense>
@@ -152,6 +168,8 @@ export default function App() {
           .hide-scrollbar::-webkit-scrollbar { display: none; }
           .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         `}</style>
+
+        <audio ref={audioRef} src="/music/khaabon-ke-parinday.mp3" loop preload="auto" />
       </div>
     </>
   )
