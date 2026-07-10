@@ -125,16 +125,16 @@ export default function App() {
             className="h-dvh snap-y snap-mandatory hide-scrollbar overflow-y-auto"
             style={{ willChange: 'scroll-position' }}
           >
-            <div data-index={0} className="snap-start h-dvh">
+            <div data-index={0} className="snap-start min-h-dvh" style={{ scrollSnapStop: 'always' }}>
               <Suspense fallback={PAGE_LOADER}><HeroPage /></Suspense>
             </div>
-            <div data-index={1} className="snap-start h-dvh">
+            <div data-index={1} className="snap-start min-h-dvh" style={{ scrollSnapStop: 'always' }}>
               <Suspense fallback={PAGE_LOADER}><MemoriesPage /></Suspense>
             </div>
-            <div data-index={2} className="snap-start h-dvh">
+            <div data-index={2} className="snap-start min-h-dvh" style={{ scrollSnapStop: 'always' }}>
               <Suspense fallback={PAGE_LOADER}><MessagePage /></Suspense>
             </div>
-            <div data-index={3} className="snap-start h-dvh">
+            <div data-index={3} className="snap-start min-h-dvh" style={{ scrollSnapStop: 'always' }}>
               <Suspense fallback={PAGE_LOADER}>
                 <FinalPage onContinue={handleContinue} />
               </Suspense>
