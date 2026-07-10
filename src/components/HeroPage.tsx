@@ -50,7 +50,7 @@ export default function HeroPage() {
       </div>
 
       {/* scroll indicator — shared component like other pages */}
-      {showContent && <ScrollDown current={0} label="Continue" />}
+      {showContent && <ScrollDown current={0} label="Scroll down" />}
     </section>
   )
 }

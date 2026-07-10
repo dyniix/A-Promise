@@ -38,7 +38,7 @@ const DUST_COUNT = 14
 
 const BURST_EMOJIS = ['\u2728', '\uD83D\uDC96', '\uD83C\uDF38', '\u2728', '\uD83D\uDC9C', '\uD83C\uDF1F']
 
-export default function NextPage({ onBack }: { onBack?: () => void }) {
+export default function NextPage() {
   const [phase, setPhase] = useState<'gift' | 'burst' | 'letter'>('gift')
 
   useEffect(() => {
@@ -254,19 +254,6 @@ export default function NextPage({ onBack }: { onBack?: () => void }) {
           </motion.footer>
         </motion.div>
       )}
-
-      {/* back button */}
-      <motion.button
-        onClick={() => onBack?.()}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2.5, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-        whileHover={{ scale: 1.04, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
-        whileTap={{ scale: 1.04, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
-        className="absolute top-8 right-8 font-mono text-[6px] md:text-[7px] uppercase tracking-[0.3em] text-white/15 hover:text-white/40 active:text-white/40 transition-colors duration-500 ease-premium cursor-pointer z-20"
-      >
-        &larr; Back to Home
-      </motion.button>
 
       {/* hidden signature */}
       <motion.p

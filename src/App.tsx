@@ -100,7 +100,6 @@ export default function App() {
 
   const handleContinue = useCallback(() => setNextState('preparing'), [])
   const handleReveal = useCallback(() => setNextState('revealed'), [])
-  const handleBack = useCallback(() => setNextState('hidden'), [])
 
   return (
     <>
@@ -158,7 +157,7 @@ export default function App() {
               className="fixed inset-0 z-[200]"
             >
               <Suspense fallback={null}>
-                <NextPage onBack={handleBack} />
+                <NextPage />
               </Suspense>
             </motion.div>
           )}
